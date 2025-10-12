@@ -1,3 +1,5 @@
+import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "src/components/ui/table";
+
 type State = string;
 
 type Symbol = string;
@@ -6,7 +8,7 @@ type Direction = "L" | "R" | "S";
 
 type Transition = Record<State, Record<Symbol, [State, Symbol, Direction]>>;
 
-export function Table() {
+export function TuringTable() {
   const transition: Transition = {
     q0: {
       "0": ["q1", "1", "R"],
@@ -35,32 +37,32 @@ export function Table() {
   const symbols = [...new Set(Object.values(transition).flatMap((value) => Object.keys(value)))];
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th className="border px-4 py-2">δ</th>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="border px-4 py-2">δ</TableHead>
           {symbols.map((symbol) => (
-            <th key={symbol} className="border px-4 py-2">
+            <TableHead key={symbol} className="border px-4 py-2">
               {symbol}
-            </th>
+            </TableHead>
           ))}
-        </tr>
-      </thead>
-      <tbody>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {states.map((state) => (
-          <tr key={state}>
-            <td className="border px-4 py-2 font-bold">{state}</td>
+          <TableRow key={state}>
+            <TableCell className="border px-4 py-2 font-bold">{state}</TableCell>
             {symbols.map((symbol) => {
               const t = transition[state][symbol];
               return (
-                <td key={symbol} className="border px-4 py-2">
+                <TableCell key={symbol} className="border px-4 py-2">
                   {t ? `(${t.join(", ")})` : "-"}
-                </td>
+                </TableCell>
               );
             })}
-          </tr>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }
