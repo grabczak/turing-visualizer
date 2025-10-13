@@ -86,6 +86,6 @@ export const counterSlice = createSlice({
   },
 });
 
-export const { addState } = counterSlice.actions;
+export const { addState, removeState, addSymbol, removeSymbol, setTransition, removeTransition } = counterSlice.actions;
 
 export default counterSlice.reducer;

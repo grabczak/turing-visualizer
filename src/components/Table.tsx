@@ -2,10 +2,12 @@ import { Table, TableBody, TableRow, TableCell } from "src/components/ui/table";
 import { Input } from "src/components/ui/input";
 import { Button } from "./ui/button";
 
-import { useAppSelector } from "src/store";
+import { useAppSelector, useAppDispatch, addState, addSymbol, removeState, removeSymbol } from "src/store";
 
 export function TuringTable() {
   const table = useAppSelector((state) => state.table);
+
+  const dispatch = useAppDispatch();
 
   const states = Object.keys(table);
   const symbols = [...new Set(Object.values(table).flatMap((value) => Object.keys(value)))];
@@ -19,7 +21,11 @@ export function TuringTable() {
           {symbols.map((symbol) => (
             <TableCell key={symbol} className="relative border p-0">
               <div className="absolute inset-0 flex items-center justify-center">
-                <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                <Button
+                  variant="outline"
+                  onClick={() => dispatch(removeSymbol(symbol))}
+                  className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+                >
                   -
                 </Button>
               </div>
@@ -36,7 +42,11 @@ export function TuringTable() {
           ))}
           <TableCell rowSpan={states.length + 1} className="relative w-10 border">
             <div className="absolute inset-0 flex items-center justify-center">
-              <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+              <Button
+                variant="outline"
+                onClick={() => dispatch(addSymbol(""))}
+                className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+              >
                 +
               </Button>
             </div>
@@ -46,7 +56,11 @@ export function TuringTable() {
           <TableRow key={state} className="h-10 border-none hover:bg-transparent">
             <TableCell className="relative w-10 border p-0">
               <div className="absolute inset-0 flex items-center justify-center">
-                <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                <Button
+                  variant="outline"
+                  onClick={() => dispatch(removeState(state))}
+                  className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+                >
                   -
                 </Button>
               </div>
@@ -68,7 +82,11 @@ export function TuringTable() {
           <TableCell />
           <TableCell colSpan={symbols.length + 1} className="relative border p-0">
             <div className="absolute inset-0 flex items-center justify-center">
-              <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+              <Button
+                variant="outline"
+                onClick={() => dispatch(addState(""))}
+                className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+              >
                 +
               </Button>
             </div>
