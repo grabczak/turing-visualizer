@@ -1,13 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-type TState = string;
-
-type TSymbol = string;
-
-type TDirection = "L" | "R" | "S";
-
-type TTransition = Record<TState, Record<TSymbol, [TState, TSymbol, TDirection] | null>>;
+import type { TState, TSymbol, TDirection, TTransition } from "src/types";
 
 const initialState: TTransition = {
   q0: {
