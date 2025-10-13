@@ -1,4 +1,4 @@
-import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "src/components/ui/table";
+import { Table, TableBody, TableRow, TableCell } from "src/components/ui/table";
 import { Input } from "src/components/ui/input";
 import { Button } from "./ui/button";
 
@@ -10,44 +10,71 @@ export function TuringTable() {
   const states = Object.keys(table);
   const symbols = [...new Set(Object.values(table).flatMap((value) => Object.keys(value)))];
 
-  const renderEditableCell = (state: string, symbol: string) => {
-    const t = table[state][symbol];
-
-    return (
-      <TableCell key={symbol} className="p-[2px] border">
-        <Input value={t?.join(", ")} className="border-none rounded-none shadow-none" />
-      </TableCell>
-    );
-  };
-
   return (
-    <div className="grid grid-cols-[1fr_auto] grid-rows-[1fr_auto]">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-none">
-            <TableHead className="border">δ</TableHead>
+    <Table>
+      <TableBody>
+        <TableRow className="h-10 border-none hover:bg-transparent">
+          <TableCell />
+          <TableCell />
+          {symbols.map((symbol) => (
+            <TableCell key={symbol} className="relative border p-0">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                  -
+                </Button>
+              </div>
+            </TableCell>
+          ))}
+        </TableRow>
+        <TableRow className="h-10 border-none hover:bg-transparent">
+          <TableCell />
+          <TableCell className="w-24 border text-center">δ</TableCell>
+          {symbols.map((symbol) => (
+            <TableCell key={symbol} className="border p-[2px]">
+              <Input value={symbol} className="rounded-none border-none p-0 px-2 text-center shadow-none" />
+            </TableCell>
+          ))}
+          <TableCell rowSpan={states.length + 1} className="relative w-10 border">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                +
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+        {states.map((state) => (
+          <TableRow key={state} className="h-10 border-none hover:bg-transparent">
+            <TableCell className="relative w-10 border p-0">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                  -
+                </Button>
+              </div>
+            </TableCell>
+            <TableCell className="border p-[2px]">
+              <Input value={state} className="rounded-none border-none p-0 px-2 text-center shadow-none" />
+            </TableCell>
             {symbols.map((symbol) => (
-              <TableHead key={symbol} className="border">
-                {symbol}
-              </TableHead>
+              <TableCell key={symbol} className="border p-[2px]">
+                <Input
+                  value={table[state][symbol]?.join(", ")}
+                  className="rounded-none border-none p-0 px-2 text-center shadow-none"
+                />
+              </TableCell>
             ))}
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {states.map((state) => (
-            <TableRow key={state} className="border-none">
-              <TableCell className="border">{state}</TableCell>
-              {symbols.map((symbol) => renderEditableCell(state, symbol))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Button variant="outline" className="h-full border-l-0 rounded-none shadow-none">
-        +
-      </Button>
-      <Button variant="outline" className="border-t-0 rounded-none shadow-none">
-        +
-      </Button>
-    </div>
+        ))}
+        <TableRow className="h-10 border-none hover:bg-transparent">
+          <TableCell />
+          <TableCell colSpan={symbols.length + 1} className="relative border p-0">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Button variant="outline" className="h-full w-full cursor-pointer rounded-none border-none shadow-none">
+                +
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   );
 }
