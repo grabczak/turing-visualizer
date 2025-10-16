@@ -1,7 +1,7 @@
-import { Table, TableBody, TableRow, TableCell } from "src/components/ui/table";
 import { Input } from "src/components/ui/input";
 import { Button } from "./ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from "./ui/select";
+import { shallowEqual } from "react-redux";
 
 import {
   useAppSelector,
@@ -18,89 +18,96 @@ import {
 import type { TDirection } from "src/types";
 
 export function TuringTable() {
-  const { states, symbols } = useAppSelector((state) => state.table);
+  const { states, symbols } = useAppSelector((state) => state.table, shallowEqual);
 
   const dispatch = useAppDispatch();
 
   return (
-    <Table>
-      <TableBody>
-        <TableRow className="h-10 border-none hover:bg-transparent">
-          <TableCell />
-          <TableCell />
-          {Object.keys(symbols).map((id) => (
-            <TableCell key={id} className="relative border p-0">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => dispatch(removeSymbol({ symbolId: id }))}
-                  className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
-                >
-                  -
-                </Button>
+    <div
+      className="grid w-full"
+      style={{
+        gridTemplateColumns: `repeat(${3 * Object.keys(symbols).length + 3}, minmax(0,max-content))`,
+        gridTemplateRows: `repeat(${Object.keys(states).length}, minmax(0,1fr))`,
+      }}
+    >
+      <div className="col-span-2 h-10"></div>
+      {Object.keys(symbols).map((symbolId) => (
+        <div key={symbolId} className="col-span-3 h-10 border">
+          <Button
+            variant="outline"
+            onClick={() => dispatch(removeSymbol({ symbolId }))}
+            className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+          >
+            -
+          </Button>
+        </div>
+      ))}
+      <div className="h-10"></div>
+      <div className="h-10"></div>
+      <div className="h-10 border text-center leading-10">δ</div>
+      {Object.keys(symbols).map((symbolId) => (
+        <div className="col-span-3 h-10 border">
+          <SymbolInput symbolId={symbolId} />
+        </div>
+      ))}
+      <div
+        className="h-full border"
+        style={{ gridRow: `span ${Object.keys(states).length + 1} / span ${Object.keys(states).length + 1}` }}
+      >
+        <Button
+          variant="outline"
+          onClick={() => dispatch(addSymbol())}
+          className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+        >
+          +
+        </Button>
+      </div>
+      {Object.keys(states).map((stateId) => (
+        <>
+          <div className="h-10 border">
+            <Button
+              variant="outline"
+              onClick={() => dispatch(removeState({ stateId }))}
+              className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+            >
+              -
+            </Button>
+          </div>
+          <div className="h-10 border">
+            <StateInput stateId={stateId} />
+          </div>
+          {Object.keys(symbols).map((symbolId) => (
+            <>
+              <div className="h-10 border">
+                <StateTransitionInput stateId={stateId} symbolId={symbolId} />
               </div>
-            </TableCell>
-          ))}
-        </TableRow>
-        <TableRow className="h-10 border-none hover:bg-transparent">
-          <TableCell />
-          <TableCell className="w-24 border text-center">δ</TableCell>
-          {Object.keys(symbols).map((id) => (
-            <TableCell key={id} className="border p-[2px]">
-              <SymbolInput symbolId={id} />
-            </TableCell>
-          ))}
-          <TableCell rowSpan={Object.keys(states).length + 1} className="relative w-10 border">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Button
-                variant="outline"
-                onClick={() => dispatch(addSymbol())}
-                className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
-              >
-                +
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-        {Object.keys(states).map((stateId) => (
-          <TableRow key={stateId} className="h-10 border-none hover:bg-transparent">
-            <TableCell className="relative w-10 border p-0">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => dispatch(removeState({ stateId }))}
-                  className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
-                >
-                  -
-                </Button>
+              <div className="h-10 border">
+                <SymbolTransitionInput stateId={stateId} symbolId={symbolId} />
               </div>
-            </TableCell>
-            <TableCell className="border p-[2px]">
-              <StateInput stateId={stateId} />
-            </TableCell>
-            {Object.keys(symbols).map((symbolId) => (
-              <TableCell key={symbolId} className="h-full border p-0">
-                <TransitionInput stateId={stateId} symbolId={symbolId} />
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
-        <TableRow className="h-10 border-none hover:bg-transparent">
-          <TableCell />
-          <TableCell colSpan={Object.keys(symbols).length + 1} className="relative border p-0">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Button
-                variant="outline"
-                onClick={() => dispatch(addState())}
-                className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
-              >
-                +
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+              <div className="h-10 border">
+                <DirectionTransitionInput stateId={stateId} symbolId={symbolId} />
+              </div>
+            </>
+          ))}
+        </>
+      ))}
+      <div className="h-10"></div>
+      <div
+        className="h-10 border"
+        style={{
+          gridColumn: `span ${3 * Object.keys(symbols).length + 1} / span ${3 * Object.keys(symbols).length + 1}`,
+        }}
+      >
+        <Button
+          variant="outline"
+          onClick={() => dispatch(addState())}
+          className="h-full w-full cursor-pointer rounded-none border-none shadow-none"
+        >
+          +
+        </Button>
+      </div>
+      <div className="h-10"></div>
+    </div>
   );
 }
 
@@ -146,8 +153,8 @@ function SymbolInput({ symbolId }: { symbolId: string }) {
   );
 }
 
-function TransitionInput({ stateId, symbolId }: { stateId: string; symbolId: string }) {
-  const { states, symbols, transitions } = useAppSelector((state) => state.table);
+function StateTransitionInput({ stateId, symbolId }: { stateId: string; symbolId: string }) {
+  const { states, transitions } = useAppSelector((state) => state.table);
 
   const dispatch = useAppDispatch();
 
@@ -161,6 +168,34 @@ function TransitionInput({ stateId, symbolId }: { stateId: string; symbolId: str
     );
   };
 
+  const t = transitions[stateId]?.[symbolId];
+
+  const [nextStateId, nextSymbolId, direction] = t || ["", "", "S"];
+
+  return (
+    <Select value={nextStateId} onValueChange={handleStateChange}>
+      <SelectTrigger className="!h-full w-full rounded-none border-none shadow-none">
+        <SelectValue placeholder="State" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>States</SelectLabel>
+          {Object.entries(states).map(([id, name]) => (
+            <SelectItem key={id} value={id}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function SymbolTransitionInput({ stateId, symbolId }: { stateId: string; symbolId: string }) {
+  const { states, symbols, transitions } = useAppSelector((state) => state.table);
+
+  const dispatch = useAppDispatch();
+
   const handleSymbolChange = (nextSymbolId: string) => {
     dispatch(
       setTransition({
@@ -170,6 +205,34 @@ function TransitionInput({ stateId, symbolId }: { stateId: string; symbolId: str
       }),
     );
   };
+
+  const t = transitions[stateId]?.[symbolId];
+
+  const [nextStateId, nextSymbolId, direction] = t || ["", "", "S"];
+
+  return (
+    <Select value={nextSymbolId} onValueChange={handleSymbolChange}>
+      <SelectTrigger className="!h-full w-full rounded-none border-none shadow-none">
+        <SelectValue placeholder="Symbol" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Symbols</SelectLabel>
+          {Object.entries(symbols).map(([id, name]) => (
+            <SelectItem key={id} value={id}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function DirectionTransitionInput({ stateId, symbolId }: { stateId: string; symbolId: string }) {
+  const { states, symbols, transitions } = useAppSelector((state) => state.table);
+
+  const dispatch = useAppDispatch();
 
   const t = transitions[stateId]?.[symbolId];
 
@@ -188,44 +251,12 @@ function TransitionInput({ stateId, symbolId }: { stateId: string; symbolId: str
   };
 
   return (
-    <div className="flex h-full">
-      <Select value={nextStateId} onValueChange={handleStateChange}>
-        <SelectTrigger className="!h-full flex-1 rounded-none border-none shadow-none">
-          <SelectValue placeholder="State" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>States</SelectLabel>
-            {Object.entries(states).map(([id, name]) => (
-              <SelectItem key={id} value={id}>
-                {name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Select value={nextSymbolId} onValueChange={handleSymbolChange}>
-        <SelectTrigger className="!h-full flex-1 rounded-none border-none shadow-none">
-          <SelectValue placeholder="Symbol" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Symbols</SelectLabel>
-            {Object.entries(symbols).map(([id, name]) => (
-              <SelectItem key={id} value={id}>
-                {name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Button
-        variant="outline"
-        onClick={handleDirectionChange}
-        className="!h-full rounded-none border-none shadow-none"
-      >
-        {direction}
-      </Button>
-    </div>
+    <Button
+      variant="outline"
+      onClick={handleDirectionChange}
+      className="!h-full w-full rounded-none border-none shadow-none"
+    >
+      {direction}
+    </Button>
   );
 }
