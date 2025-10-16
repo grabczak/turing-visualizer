@@ -7,7 +7,7 @@ import { store } from "src/store";
 function App() {
   return (
     <Provider store={store}>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto flex flex-col items-center p-4">
         <Table />
         <Tape />
       </div>

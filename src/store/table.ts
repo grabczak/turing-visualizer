@@ -1,85 +1,156 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { type PayloadAction, nanoid } from "@reduxjs/toolkit";
 
-import type { TState, TSymbol, TDirection, TTransition } from "src/types";
+import type { TDirection, TTable } from "src/types";
 
-const initialState: TTransition = {
-  q0: {
-    "0": ["q1", "1", "R"],
-    "1": ["q0", "0", "L"],
+const initialState: TTable = {
+  states: {
+    "st-0": "q0", // Start
+    "st-1": "qMarkKeep", // Mark 1 to keep
+    "st-2": "qSkipOne", // Skip next 1
+    "st-3": "qReturn", // Go back to start
+    "st-4": "qClean", // Cleanup phase
+    "st-5": "qH", // Halt
   },
-  q1: {
-    "0": ["q2", "1", "R"],
-    "1": ["q1", "1", "R"],
+  symbols: {
+    "sym-1": "1",
+    "sym-x": "X",
+    "sym-y": "Y",
+    "sym-b": "_",
   },
-  q2: {
-    "0": ["q3", "1", "L"],
-    "1": ["q2", "0", "R"],
-  },
-  q3: {
-    "0": ["q4", "1", "S"],
-    "1": ["q3", "1", "L"],
-  },
-  q4: {
-    "0": ["q4", "0", "S"],
-    "1": ["q4", "1", "S"],
+  transitions: {
+    // q0
+    "st-0": {
+      "sym-1": ["st-1", "sym-x", "R"],
+      "sym-x": ["st-4", "sym-x", "R"],
+      "sym-b": ["st-4", "sym-b", "L"],
+    },
+    // qMarkKeep
+    "st-1": {
+      "sym-1": ["st-2", "sym-y", "R"],
+      "sym-y": ["st-2", "sym-y", "R"],
+      "sym-x": ["st-2", "sym-x", "R"],
+      "sym-b": ["st-3", "sym-b", "L"],
+    },
+    // qSkipOne
+    "st-2": {
+      "sym-1": ["st-3", "sym-1", "L"],
+      "sym-y": ["st-3", "sym-y", "L"],
+      "sym-b": ["st-3", "sym-b", "L"],
+    },
+    // qReturn
+    "st-3": {
+      "sym-1": ["st-3", "sym-1", "L"],
+      "sym-y": ["st-3", "sym-y", "L"],
+      "sym-x": ["st-0", "sym-x", "R"],
+      "sym-b": ["st-0", "sym-b", "R"],
+    },
+    // qClean
+    "st-4": {
+      "sym-x": ["st-4", "sym-1", "R"],
+      "sym-y": ["st-4", "sym-b", "R"],
+      "sym-b": ["st-5", "sym-b", "S"],
+    },
+    // qH (halt)
+    "st-5": {},
   },
 };
 
-export const counterSlice = createSlice({
-  name: "counter",
+export const tableSlice = createSlice({
+  name: "table",
   initialState,
   reducers: {
-    addState: (state, action: PayloadAction<TState>) => {
-      state[action.payload] = {};
-    },
-    removeState: (state, action: PayloadAction<TState>) => {
-      delete state[action.payload];
+    addState: (table) => {
+      const stateId = nanoid();
 
-      for (const st in state) {
-        for (const sym in state[st]) {
-          if (state[st][sym]?.[0] === action.payload) {
-            state[st][sym] = null;
+      table.states[stateId] = `q${Object.keys(table.states).length}`;
+    },
+    removeState: (table, action: PayloadAction<{ stateId: string }>) => {
+      const { stateId } = action.payload;
+
+      delete table.states[stateId];
+
+      delete table.transitions[stateId];
+
+      for (const _stateId in table.transitions) {
+        for (const _symbolId in table.transitions[_stateId]) {
+          if (table.transitions[_stateId][_symbolId]?.[0] === stateId) {
+            table.transitions[_stateId][_symbolId] = ["", "", "S"];
           }
         }
       }
     },
-    addSymbol: (state, action: PayloadAction<TSymbol>) => {
-      for (const s in state) {
-        state[s][action.payload] = null;
+    addSymbol: (table) => {
+      const symbolId = nanoid();
+
+      table.symbols[symbolId] = `${Object.keys(table.symbols).length}`;
+
+      for (const s in table.transitions) {
+        table.transitions[s][nanoid()] = ["", "", "S"];
       }
     },
-    removeSymbol: (state, action: PayloadAction<TSymbol>) => {
-      for (const s in state) {
-        delete state[s][action.payload];
+    removeSymbol: (table, action: PayloadAction<{ symbolId: string }>) => {
+      const { symbolId } = action.payload;
+
+      delete table.symbols[symbolId];
+
+      for (const s in table.transitions) {
+        delete table.transitions[s][symbolId];
       }
     },
     setTransition: (
-      state,
+      table,
       action: PayloadAction<{
-        fromState: TState;
-        symbol: TSymbol;
-        toState: TState;
-        writeSymbol: TSymbol;
-        direction: TDirection;
+        stateId: string;
+        symbolId: string;
+        nextStateId?: string;
+        nextSymbolId?: string;
+        direction?: TDirection;
       }>,
     ) => {
-      const { fromState, symbol, toState, writeSymbol, direction } = action.payload;
+      const { stateId, symbolId, nextStateId, nextSymbolId, direction } = action.payload;
 
-      if (state[fromState]) {
-        state[fromState][symbol] = [toState, writeSymbol, direction];
+      const row = table.transitions[stateId];
+
+      if (row) {
+        const col = row[symbolId];
+
+        if (col) {
+          table.transitions[stateId][symbolId] = [nextStateId || col[0], nextSymbolId || col[1], direction || col[2]];
+        } else {
+          table.transitions[stateId][symbolId] = [nextStateId || "", nextSymbolId || "", direction || "S"];
+        }
       }
     },
-    removeTransition: (state, action: PayloadAction<{ fromState: TState; symbol: TSymbol }>) => {
-      const { fromState, symbol } = action.payload;
+    removeTransition: (table, action: PayloadAction<{ stateId: string; symbolId: string }>) => {
+      const { stateId, symbolId } = action.payload;
 
-      if (state[fromState]) {
-        state[fromState][symbol] = null;
+      if (table.transitions[stateId]) {
+        table.transitions[stateId][symbolId] = ["", "", "S"];
       }
+    },
+    renameState: (table, action: PayloadAction<{ stateId: string; stateName: string }>) => {
+      const { stateId, stateName } = action.payload;
+
+      table.states[stateId] = stateName;
+    },
+    renameSymbol: (table, action: PayloadAction<{ symbolId: string; symbolName: string }>) => {
+      const { symbolId, symbolName } = action.payload;
+
+      table.symbols[symbolId] = symbolName;
     },
   },
 });
 
-export const { addState, removeState, addSymbol, removeSymbol, setTransition, removeTransition } = counterSlice.actions;
+export const {
+  addState,
+  removeState,
+  addSymbol,
+  removeSymbol,
+  setTransition,
+  removeTransition,
+  renameState,
+  renameSymbol,
+} = tableSlice.actions;
 
-export default counterSlice.reducer;
+export default tableSlice.reducer;

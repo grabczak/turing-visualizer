@@ -7,6 +7,8 @@ import { useAppSelector, useAppDispatch, step, store } from "src/store";
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
 
+  const symbols = useAppSelector((state) => state.table.symbols);
+
   const dispatch = useAppDispatch();
 
   const [running, setRunning] = useState(false);
@@ -20,13 +22,13 @@ export function Tape() {
     const next = () => {
       const { tape, table } = store.getState();
 
-      const { state, head } = tape;
+      const { stateId, head } = tape;
 
-      const rule = table[state]?.[head.value];
+      const rule = table.transitions[stateId]?.[head.symbolId];
 
       if (rule) {
         const [newState, newSymbol, direction] = rule;
-        dispatch(step({ state: newState, symbol: newSymbol, direction }));
+        dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
       }
     };
 
@@ -69,7 +71,7 @@ export function Tape() {
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={cx("flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border")}
             >
-              {cell.value}
+              {symbols[cell.symbolId] || "_"}
             </motion.div>
           ))}
         </motion.div>

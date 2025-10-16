@@ -1,25 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { type PayloadAction, nanoid } from "@reduxjs/toolkit";
 
-import type { TState, TSymbol, TDirection } from "src/types";
+import type { TTape, TDirection, TCell } from "src/types";
 
-interface TTapeCell {
-  id: number;
-  value: TSymbol;
-}
+const createCell = (symbolId: string): TCell => ({ id: nanoid(), symbolId });
 
-interface TTape {
-  state: TState;
-  left: TTapeCell[];
-  head: TTapeCell;
-  right: TTapeCell[];
-}
-
-let nextId = 0;
-const createCell = (value: TSymbol): TTapeCell => ({ id: nextId++, value });
-
-const write = (tape: TTape, state: TState, symbol: TSymbol): TTape => {
-  return { ...tape, state, head: { ...tape.head, value: symbol } };
+const write = (tape: TTape, stateId: string, symbolId: string): TTape => {
+  return { ...tape, stateId, head: { ...tape.head, symbolId } };
 };
 
 const moveLeft = (tape: TTape): TTape => {
@@ -37,7 +24,7 @@ const moveRight = (tape: TTape): TTape => {
 };
 
 const initialState: TTape = {
-  state: "q0",
+  stateId: "q0",
   left: [createCell("1"), createCell("0")],
   head: createCell("1"),
   right: [createCell("0"), createCell("1")],
@@ -50,14 +37,14 @@ export const tapeSlice = createSlice({
     step: (
       tape,
       action: PayloadAction<{
-        state: TState;
-        symbol: TSymbol;
+        stateName: string;
+        symbolName: string;
         direction: TDirection;
       }>,
     ) => {
-      const { state, symbol, direction } = action.payload;
+      const { stateName, symbolName, direction } = action.payload;
 
-      const _tape = write(tape, state, symbol);
+      const _tape = write(tape, stateName, symbolName);
 
       switch (direction) {
         case "L":
