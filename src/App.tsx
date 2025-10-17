@@ -1,6 +1,6 @@
 import { Provider } from "react-redux";
 
-import { TuringTable as Table } from "src/components/Table";
+import { Table } from "src/components/Table";
 import { Tape } from "src/components/Tape";
 import { store } from "src/store";
 

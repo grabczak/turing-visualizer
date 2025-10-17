@@ -12,7 +12,9 @@ export type TSymbols = Record<TSymbolId, TSymbolName>;
 
 export type TDirection = "L" | "R" | "S";
 
-export type TTransitions = Record<TStateId, Record<TSymbolId, [TStateId, TSymbolId, TDirection]>>;
+export type TTransition = [TStateId, TSymbolId, TDirection];
+
+export type TTransitions = Record<TStateId, Record<TSymbolId, TTransition>>;
 
 export type TTable = {
   states: TStates;

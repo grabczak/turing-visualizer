@@ -1,5 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { type PayloadAction, nanoid } from "@reduxjs/toolkit";
+import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { TTape, TDirection, TCell } from "src/types";
 
