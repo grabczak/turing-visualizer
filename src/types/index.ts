@@ -14,7 +14,7 @@ export type TDirection = "L" | "R" | "S";
 
 export type TTransition = [TStateId, TSymbolId, TDirection];
 
-export type TTransitions = Record<TStateId, Record<TSymbolId, TTransition>>;
+export type TTransitions = Record<TStateId, Record<TSymbolId, TTransition | undefined> | undefined>;
 
 export type TTable = {
   states: TStates;

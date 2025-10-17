@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { shallowEqual } from "react-redux";
 
 import { Button } from "src/components/ui/button";
@@ -28,6 +29,9 @@ import type { TDirection, TStateId, TSymbolId } from "src/types";
 export function Table() {
   const { states, symbols } = useAppSelector((state) => state.table, shallowEqual);
 
+  const currentStateId = useAppSelector((state) => state.tape.stateId);
+  const currentSymbolId = useAppSelector((state) => state.tape.head.symbolId);
+
   const stateIds = Object.keys(states);
   const symbolIds = Object.keys(symbols);
 
@@ -38,7 +42,7 @@ export function Table() {
     <Grid stateCount={stateCount} symbolCount={symbolCount}>
       <Cell className="col-span-2" border={false} />
       {symbolIds.map((symbolId) => (
-        <Cell className="col-span-3">
+        <Cell key={symbolId} className="col-span-3">
           <RemoveSymbolButton symbolId={symbolId} disabled={symbolCount <= 1} />
         </Cell>
       ))}
@@ -46,7 +50,10 @@ export function Table() {
       <Cell border={false} />
       <Cell className="text-center leading-10">δ</Cell>
       {symbolIds.map((symbolId) => (
-        <Cell className="col-span-3">
+        <Cell
+          key={symbolId}
+          className={cn("col-span-3", symbolId === currentSymbolId ? "bg-emerald-100" : "bg-transparent")}
+        >
           <SymbolInput symbolId={symbolId} />
         </Cell>
       ))}
@@ -54,15 +61,15 @@ export function Table() {
         <AddSymbolButton />
       </Cell>
       {stateIds.map((stateId) => (
-        <>
+        <Fragment key={stateId}>
           <Cell>
             <RemoveStateButton stateId={stateId} disabled={stateCount <= 1} />
           </Cell>
-          <Cell>
+          <Cell className={cn(stateId === currentStateId ? "bg-emerald-100" : "bg-transparent")}>
             <StateInput stateId={stateId} />
           </Cell>
           {symbolIds.map((symbolId) => (
-            <>
+            <Fragment key={symbolId}>
               <Cell>
                 <StateTransitionInput stateId={stateId} symbolId={symbolId} />
               </Cell>
@@ -72,9 +79,9 @@ export function Table() {
               <Cell>
                 <DirectionTransitionInput stateId={stateId} symbolId={symbolId} />
               </Cell>
-            </>
+            </Fragment>
           ))}
-        </>
+        </Fragment>
       ))}
       <Cell border={false} />
       <Cell style={{ gridColumn: `span ${3 * symbolCount + 1}` }}>
@@ -229,7 +236,7 @@ function SymbolInput({ symbolId }: { symbolId: TSymbolId }) {
 function StateTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbolId: TSymbolId }) {
   const states = useAppSelector((state) => state.table.states);
 
-  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId] || ["", "", "S"]);
+  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId]);
 
   const dispatch = useAppDispatch();
 
@@ -243,7 +250,7 @@ function StateTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbol
     );
   };
 
-  const nextStateId = transition[0];
+  const nextStateId = (transition || ["", "", "S"])[0];
 
   return (
     <Select value={nextStateId} onValueChange={handleStateChange}>
@@ -267,7 +274,7 @@ function StateTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbol
 function SymbolTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbolId: TSymbolId }) {
   const symbols = useAppSelector((state) => state.table.symbols);
 
-  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId] || ["", "", "S"]);
+  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId]);
 
   const dispatch = useAppDispatch();
 
@@ -281,7 +288,7 @@ function SymbolTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbo
     );
   };
 
-  const nextSymbolId = transition[1];
+  const nextSymbolId = (transition || ["", "", "S"])[1];
 
   return (
     <Select value={nextSymbolId} onValueChange={handleSymbolChange}>
@@ -303,11 +310,11 @@ function SymbolTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbo
 }
 
 function DirectionTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbolId: TSymbolId }) {
-  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId] || ["", "", "S"]);
+  const transition = useAppSelector((state) => state.table.transitions[stateId]?.[symbolId]);
 
   const dispatch = useAppDispatch();
 
-  const direction = transition[2];
+  const direction = (transition || ["", "", "S"])[2];
 
   const handleDirectionChange = () => {
     const dir = ["L", "R", "S"];

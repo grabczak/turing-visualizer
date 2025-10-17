@@ -4,48 +4,39 @@ import type { TDirection, TTable, TStateId, TSymbolId } from "src/types";
 
 const initialState: TTable = {
   states: {
-    "st-0": "q0", // Start
-    "st-1": "qMarkKeep", // Mark 1 to keep
-    "st-2": "qSkipOne", // Skip next 1
-    "st-3": "qReturn", // Go back to start
-    "st-4": "qClean", // Cleanup phase
-    "st-5": "qH", // Halt
+    q0: "q0",
+    q1: "q1",
+    q2: "q2",
+    q3: "q3",
+    q4: "q4",
+    q5: "qH",
   },
   symbols: {
-    "sym-1": "1",
-    "sym-x": "X",
-    "sym-y": "Y",
-    "sym-b": "_",
+    "_": "_",
+    "1": "1",
+    "X": "X",
   },
   transitions: {
-    "st-0": {
-      "sym-1": ["st-1", "sym-x", "R"],
-      "sym-x": ["st-4", "sym-x", "R"],
-      "sym-b": ["st-4", "sym-b", "L"],
+    q0: {
+      "1": ["q1", "X", "R"],
+      "_": ["q4", "_", "L"],
     },
-    "st-1": {
-      "sym-1": ["st-2", "sym-y", "R"],
-      "sym-y": ["st-2", "sym-y", "R"],
-      "sym-x": ["st-2", "sym-x", "R"],
-      "sym-b": ["st-3", "sym-b", "L"],
+    q1: {
+      "1": ["q1", "1", "R"],
+      "_": ["q2", "_", "L"],
     },
-    "st-2": {
-      "sym-1": ["st-3", "sym-1", "L"],
-      "sym-y": ["st-3", "sym-y", "L"],
-      "sym-b": ["st-3", "sym-b", "L"],
+    q2: {
+      "1": ["q3", "_", "L"],
+      "X": ["q4", "_", "L"],
     },
-    "st-3": {
-      "sym-1": ["st-3", "sym-1", "L"],
-      "sym-y": ["st-3", "sym-y", "L"],
-      "sym-x": ["st-0", "sym-x", "R"],
-      "sym-b": ["st-0", "sym-b", "R"],
+    q3: {
+      "1": ["q3", "1", "L"],
+      "X": ["q0", "X", "R"],
     },
-    "st-4": {
-      "sym-x": ["st-4", "sym-1", "R"],
-      "sym-y": ["st-4", "sym-b", "R"],
-      "sym-b": ["st-5", "sym-b", "S"],
+    q4: {
+      X: ["q4", "1", "L"],
+      _: ["q5", "_", "R"],
     },
-    "st-5": {},
   },
 };
 
@@ -84,7 +75,9 @@ export const tableSlice = createSlice({
       delete table.symbols[symbolId];
 
       for (const _stateId in table.transitions) {
-        delete table.transitions[_stateId][symbolId];
+        if (table.transitions[_stateId]) {
+          delete table.transitions[_stateId][symbolId];
+        }
 
         for (const _symbolId in table.transitions[_stateId]) {
           if (table.transitions[_stateId][_symbolId]?.[1] === symbolId) {
@@ -105,17 +98,17 @@ export const tableSlice = createSlice({
     ) => {
       const { stateId, symbolId, nextStateId, nextSymbolId, direction } = action.payload;
 
-      const row = table.transitions[stateId];
-
-      if (row) {
-        const col = row[symbolId];
-
-        if (col) {
-          table.transitions[stateId][symbolId] = [nextStateId || col[0], nextSymbolId || col[1], direction || col[2]];
-        } else {
-          table.transitions[stateId][symbolId] = [nextStateId || "", nextSymbolId || "", direction || "S"];
-        }
+      if (!table.transitions[stateId]) {
+        table.transitions[stateId] = {};
       }
+
+      if (!table.transitions[stateId][symbolId]) {
+        table.transitions[stateId][symbolId] = ["", "", "S"];
+      }
+
+      const t = table.transitions[stateId][symbolId];
+
+      table.transitions[stateId][symbolId] = [nextStateId || t[0], nextSymbolId || t[1], direction || t[2]];
     },
     renameState: (table, action: PayloadAction<{ stateId: TStateId; stateName: TSymbolId }>) => {
       const { stateId, stateName } = action.payload;

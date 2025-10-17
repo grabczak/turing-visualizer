@@ -43,7 +43,7 @@ export function Tape() {
   const offset = (cells.length / 2 - headIndex - 0.5) * cellWidth;
 
   return (
-    <div className="mt-10 flex flex-col items-center gap-4">
+    <div className="mt-10 flex w-full flex-col items-center gap-4">
       <div className="my-4">
         <button onClick={() => setRunning(true)} className="border px-4 py-2">
           ⏵ Run
@@ -68,10 +68,10 @@ export function Tape() {
               animate={{
                 backgroundColor: i === headIndex ? "rgb(255,0,0)" : "rgba(0,0,0,0)",
               }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className={cx("flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border")}
             >
-              {symbols[cell.symbolId] || "_"}
+              {symbols[cell.symbolId]}
             </motion.div>
           ))}
         </motion.div>
