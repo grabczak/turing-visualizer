@@ -9,7 +9,7 @@ const initialState: TTable = {
     q2: "q2",
     q3: "q3",
     q4: "q4",
-    q5: "qH",
+    qH: "qH",
   },
   symbols: {
     "_": "_",
@@ -35,7 +35,7 @@ const initialState: TTable = {
     },
     q4: {
       X: ["q4", "1", "L"],
-      _: ["q5", "_", "R"],
+      _: ["qH", "_", "R"],
     },
   },
 };
