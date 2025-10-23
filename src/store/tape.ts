@@ -33,6 +33,15 @@ export const tapeSlice = createSlice({
   name: "tape",
   initialState,
   reducers: {
+    left: (tape) => {
+      return moveLeft(tape);
+    },
+    right: (tape) => {
+      return moveRight(tape);
+    },
+    set: (tape, action: PayloadAction<{ symbolId: TSymbolId }>) => {
+      tape.head.symbolId = action.payload.symbolId;
+    },
     step: (
       tape,
       action: PayloadAction<{
@@ -57,6 +66,6 @@ export const tapeSlice = createSlice({
   },
 });
 
-export const { step } = tapeSlice.actions;
+export const { left, right, step, set } = tapeSlice.actions;
 
 export default tapeSlice.reducer;

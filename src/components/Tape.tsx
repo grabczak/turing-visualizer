@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import cx from "classnames";
 
-import { useAppSelector, useAppDispatch, step, store } from "src/store";
+import { useAppSelector, useAppDispatch, step, store, left, right, set } from "src/store";
 
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
@@ -38,6 +38,26 @@ export function Tape() {
 
     return () => clearInterval(interval);
   }, [dispatch, running]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === "ArrowLeft") {
+        dispatch(left());
+      } else if (e.code === "ArrowRight") {
+        dispatch(right());
+      } else {
+        const symbol = Object.entries(symbols).find(([, name]) => name === e.key);
+
+        if (symbol) {
+          dispatch(set({ symbolId: symbol[0] }));
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [dispatch, symbols]);
 
   const cellWidth = 48; // w-10 = 2.5rem = 40px, plus gap ≈ 8px
   const offset = (cells.length / 2 - headIndex - 0.5) * cellWidth;
