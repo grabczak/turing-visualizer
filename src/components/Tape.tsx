@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Play, Pause, RotateCcw } from "lucide-react";
 import cx from "classnames";
 
+import { Button } from "./ui/button";
+import { ButtonGroup } from "./ui/button-group";
 import { useAppSelector, useAppDispatch, step, store, left, right, set } from "src/store";
 
 export function Tape() {
@@ -64,17 +67,25 @@ export function Tape() {
 
   return (
     <div className="mt-10 flex w-full flex-col items-center gap-4">
-      <div className="my-4">
-        <button onClick={() => setRunning(true)} className="border px-4 py-2">
-          ⏵ Run
-        </button>
-        <button onClick={() => setRunning(false)} className="border px-4 py-2">
-          ⏸ Pause
-        </button>
-        <button className="border px-4 py-2">⟳ Reset</button>
-        <button className="border px-4 py-2">◀ Left</button>
-        <button className="border px-4 py-2">▶ Right</button>
-      </div>
+      <ButtonGroup>
+        <Button variant="outline" onClick={() => setRunning(true)} className="cursor-pointer">
+          <Play /> Play
+        </Button>
+        <Button variant="outline" onClick={() => setRunning(false)} className="cursor-pointer">
+          <Pause /> Pause
+        </Button>
+        <Button variant="outline" className="cursor-pointer">
+          <RotateCcw /> Reset
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <Button variant="outline" onClick={() => dispatch(left())} className="cursor-pointer">
+          <ArrowLeft /> Left
+        </Button>
+        <Button variant="outline" onClick={() => dispatch(right())} className="cursor-pointer">
+          <ArrowRight /> Right
+        </Button>
+      </ButtonGroup>
       <div className="relative flex w-full justify-center overflow-hidden">
         <motion.div
           className="flex gap-2 font-mono text-lg"

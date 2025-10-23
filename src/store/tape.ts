@@ -24,7 +24,7 @@ const moveRight = (tape: TTape): TTape => {
 
 const initialState: TTape = {
   stateId: "q0",
-  left: Array(3).fill("_").map(createCell),
+  left: Array(6).fill("_").map(createCell),
   head: createCell("1"),
   right: Array(6).fill("1").map(createCell),
 };
