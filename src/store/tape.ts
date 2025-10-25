@@ -1,6 +1,6 @@
 import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { TTape, TDirection, TCell, TSymbolId, TStateId } from "src/types";
+import type { TTape, TDirection, TCell, TSymbolId, TStateId, TStatus } from "src/types";
 
 const createCell = (symbolId: TSymbolId): TCell => ({ id: nanoid(), symbolId });
 
@@ -27,6 +27,7 @@ const initialState: TTape = {
   left: Array(100).fill("_").map(createCell),
   head: createCell("1"),
   right: [...Array(6).fill("1").map(createCell), ...Array(94).fill("_").map(createCell)],
+  status: "idle",
 };
 
 export const tapeSlice = createSlice({
@@ -66,9 +67,12 @@ export const tapeSlice = createSlice({
     restore: (_, action: PayloadAction<{ tape: TTape }>) => {
       return action.payload.tape;
     },
+    setStatus: (tape, action: PayloadAction<{ status: TStatus }>) => {
+      tape.status = action.payload.status;
+    },
   },
 });
 
-export const { left, right, step, set, restore } = tapeSlice.actions;
+export const { left, right, step, set, restore, setStatus } = tapeSlice.actions;
 
 export default tapeSlice.reducer;

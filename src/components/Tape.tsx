@@ -1,13 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, FastForward, Play, Pause, RotateCcw, Triangle } from "lucide-react";
 import cx from "classnames";
 
 import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
-import { useAppSelector, useAppDispatch, step, store, left, right, set, restore } from "src/store";
-
-type TStatus = "idle" | "running" | "paused" | "done";
+import { useAppSelector, useAppDispatch, step, store, left, right, set, restore, setStatus } from "src/store";
 
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
@@ -16,7 +14,7 @@ export function Tape() {
 
   const dispatch = useAppDispatch();
 
-  const [status, setStatus] = useState<TStatus>((localStorage.getItem("status") as TStatus) || "idle");
+  const status = tape.status;
 
   const next = useCallback(() => {
     const { tape, table } = store.getState();
@@ -33,7 +31,7 @@ export function Tape() {
 
       dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
     } else {
-      setStatus("done");
+      dispatch(setStatus({ status: "done" }));
     }
   }, [dispatch]);
 
@@ -69,20 +67,16 @@ export function Tape() {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [dispatch, symbols]);
 
-  useEffect(() => {
-    return () => localStorage.setItem("status", status);
-  });
-
   const handleRun = () => {
     if (status === "idle") {
       localStorage.setItem("tape", JSON.stringify(tape));
     }
 
-    setStatus("running");
+    dispatch(setStatus({ status: "running" }));
   };
 
   const handlePause = () => {
-    setStatus("paused");
+    dispatch(setStatus({ status: "paused" }));
   };
 
   const handleStep = () => {
@@ -90,7 +84,7 @@ export function Tape() {
       localStorage.setItem("tape", JSON.stringify(tape));
     }
 
-    setStatus("paused");
+    dispatch(setStatus({ status: "paused" }));
 
     next();
   };
@@ -99,7 +93,7 @@ export function Tape() {
     const _tape = localStorage.getItem("tape");
 
     if (_tape) {
-      setStatus("idle");
+      dispatch(setStatus({ status: "idle" }));
 
       dispatch(restore({ tape: JSON.parse(_tape) }));
     }
