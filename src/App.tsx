@@ -9,7 +9,14 @@ function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <div className="container mx-auto flex flex-col items-center p-4">
+        <div className="py-8">
+          <h1 className="text-center text-4xl font-bold tracking-tight">Turing Machine Visualizer</h1>
+          <div className="py-4 text-center font-semibold lg:hidden">
+            <h2>⚠️ Warning ⚠️</h2>
+            This app is optimized for desktop screens.
+            <br />
+            Some features may not display correctly on mobile devices.
+          </div>
           <Table />
           <Tape />
         </div>

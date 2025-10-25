@@ -42,7 +42,7 @@ export function Table() {
     <Grid stateCount={stateCount} symbolCount={symbolCount}>
       <Cell className="col-span-2" border={false} />
       {symbolIds.map((symbolId) => (
-        <Cell key={symbolId} className="col-span-3">
+        <Cell key={symbolId} className="col-span-3 min-w-60">
           <RemoveSymbolButton symbolId={symbolId} disabled={symbolCount <= 1} />
         </Cell>
       ))}
@@ -102,14 +102,16 @@ function Grid({
   symbolCount: number;
 }) {
   return (
-    <div
-      className="grid"
-      style={{
-        gridTemplateColumns: `repeat(${3 * symbolCount + 3}, minmax(0, max-content))`,
-        gridTemplateRows: `repeat(${stateCount}, minmax(0, 1fr))`,
-      }}
-    >
-      {children}
+    <div className="mt-8 flex justify-center border-t border-b">
+      <div
+        className="grid overflow-scroll p-8"
+        style={{
+          gridTemplateColumns: `repeat(${3 * symbolCount + 3}, max-content)`,
+          gridTemplateRows: `repeat(${stateCount}, 1fr)`,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

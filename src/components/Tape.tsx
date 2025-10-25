@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Play, Pause, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, FastForward, Play, Pause, RotateCcw, Triangle } from "lucide-react";
 import cx from "classnames";
 
 import { Button } from "./ui/button";
@@ -66,18 +66,39 @@ export function Tape() {
   const offset = (cells.length / 2 - headIndex - 0.5) * cellWidth;
 
   return (
-    <div className="mt-10 flex w-full flex-col items-center gap-4">
+    <div className="flex w-full flex-col items-center gap-8 py-8">
       <ButtonGroup>
         <Button variant="outline" onClick={() => setRunning(true)} className="cursor-pointer">
-          <Play /> Play
+          <Play /> Run
         </Button>
         <Button variant="outline" onClick={() => setRunning(false)} className="cursor-pointer">
           <Pause /> Pause
         </Button>
         <Button variant="outline" className="cursor-pointer">
+          <FastForward /> Step
+        </Button>
+        <Button variant="outline" className="cursor-pointer">
           <RotateCcw /> Reset
         </Button>
       </ButtonGroup>
+      <div className="relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden border-t border-b p-4">
+        <Triangle strokeWidth={1} className="rotate-180 text-gray-300" />
+        <motion.div
+          className="flex gap-2 font-mono text-lg"
+          animate={{ x: offset }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          {cells.map((cell) => (
+            <div
+              key={cell.id}
+              className={cx("flex h-10 w-10 items-center justify-center rounded-md border border-gray-300")}
+            >
+              {symbols[cell.symbolId]}
+            </div>
+          ))}
+        </motion.div>
+        <Triangle strokeWidth={1} className="text-gray-300" />
+      </div>
       <ButtonGroup>
         <Button variant="outline" onClick={() => dispatch(left())} className="cursor-pointer">
           <ArrowLeft /> Left
@@ -86,27 +107,6 @@ export function Tape() {
           <ArrowRight /> Right
         </Button>
       </ButtonGroup>
-      <div className="relative flex w-full justify-center overflow-hidden">
-        <motion.div
-          className="flex gap-2 font-mono text-lg"
-          animate={{ x: offset }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          {cells.map((cell, i) => (
-            <motion.div
-              key={cell.id}
-              layout
-              animate={{
-                backgroundColor: i === headIndex ? "rgb(255,0,0)" : "rgba(0,0,0,0)",
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className={cx("flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border")}
-            >
-              {symbols[cell.symbolId]}
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
     </div>
   );
 }

@@ -24,9 +24,9 @@ const moveRight = (tape: TTape): TTape => {
 
 const initialState: TTape = {
   stateId: "q0",
-  left: Array(6).fill("_").map(createCell),
+  left: Array(100).fill("_").map(createCell),
   head: createCell("1"),
-  right: Array(6).fill("1").map(createCell),
+  right: [...Array(6).fill("1").map(createCell), ...Array(94).fill("_").map(createCell)],
 };
 
 export const tapeSlice = createSlice({
