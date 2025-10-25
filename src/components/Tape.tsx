@@ -7,42 +7,47 @@ import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
 import { useAppSelector, useAppDispatch, step, store, left, right, set, restore } from "src/store";
 
+type TStatus = "idle" | "running" | "paused" | "done";
+
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
-
-  const rule = useAppSelector((state) => state.table.transitions[state.tape.stateId]?.[state.tape.head.symbolId]);
 
   const symbols = useAppSelector((state) => state.table.symbols);
 
   const dispatch = useAppDispatch();
 
-  const [running, setRunning] = useState(false);
+  const [status, setStatus] = useState<TStatus>((localStorage.getItem("status") as TStatus) || "idle");
 
   const next = useCallback(() => {
     const { tape, table } = store.getState();
 
-    const { stateId, head } = tape;
+    const {
+      stateId,
+      head: { symbolId },
+    } = tape;
 
-    const rule = table.transitions[stateId]?.[head.symbolId];
+    const rule = table.transitions[stateId]?.[symbolId];
 
     if (rule) {
       const [newState, newSymbol, direction] = rule;
 
       dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
     } else {
-      setRunning(false);
+      setStatus("done");
     }
   }, [dispatch]);
 
   useEffect(() => {
-    if (!running) return;
+    if (status !== "running") {
+      return;
+    }
 
     next();
 
     const interval = setInterval(next, 500);
 
     return () => clearInterval(interval);
-  }, [running, next]);
+  }, [status, next]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -64,17 +69,29 @@ export function Tape() {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [dispatch, symbols]);
 
-  const handleRun = () => {
-    localStorage.setItem("tape", JSON.stringify(tape));
+  useEffect(() => {
+    return () => localStorage.setItem("status", status);
+  });
 
-    setRunning(true);
+  const handleRun = () => {
+    if (status === "idle") {
+      localStorage.setItem("tape", JSON.stringify(tape));
+    }
+
+    setStatus("running");
   };
 
   const handlePause = () => {
-    setRunning(false);
+    setStatus("paused");
   };
 
   const handleStep = () => {
+    if (status === "idle") {
+      localStorage.setItem("tape", JSON.stringify(tape));
+    }
+
+    setStatus("paused");
+
     next();
   };
 
@@ -82,6 +99,8 @@ export function Tape() {
     const _tape = localStorage.getItem("tape");
 
     if (_tape) {
+      setStatus("idle");
+
       dispatch(restore({ tape: JSON.parse(_tape) }));
     }
   };
@@ -95,16 +114,36 @@ export function Tape() {
   return (
     <div className="flex w-full flex-col items-center gap-8 py-8">
       <ButtonGroup>
-        <Button variant="outline" onClick={handleRun} disabled={!rule || running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={handleRun}
+          disabled={["running", "done"].includes(status)}
+          className="cursor-pointer"
+        >
           <Play /> Run
         </Button>
-        <Button variant="outline" onClick={handlePause} disabled={!running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={handlePause}
+          disabled={["idle", "paused", "done"].includes(status)}
+          className="cursor-pointer"
+        >
           <Pause /> Pause
         </Button>
-        <Button variant="outline" onClick={handleStep} disabled={!rule || running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={handleStep}
+          disabled={["running", "done"].includes(status)}
+          className="cursor-pointer"
+        >
           <FastForward /> Step
         </Button>
-        <Button variant="outline" onClick={handleReset} disabled={running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={handleReset}
+          disabled={["idle", "running"].includes(status)}
+          className="cursor-pointer"
+        >
           <RotateCcw /> Reset
         </Button>
       </ButtonGroup>
@@ -127,10 +166,20 @@ export function Tape() {
         <Triangle strokeWidth={1} className="text-gray-300" />
       </div>
       <ButtonGroup>
-        <Button variant="outline" onClick={() => dispatch(left())} disabled={running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={() => dispatch(left())}
+          disabled={status === "running"}
+          className="cursor-pointer"
+        >
           <ArrowLeft /> Left
         </Button>
-        <Button variant="outline" onClick={() => dispatch(right())} disabled={running} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={() => dispatch(right())}
+          disabled={status === "running"}
+          className="cursor-pointer"
+        >
           <ArrowRight /> Right
         </Button>
       </ButtonGroup>
