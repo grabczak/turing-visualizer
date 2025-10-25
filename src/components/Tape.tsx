@@ -10,14 +10,13 @@ import { useAppSelector, useAppDispatch, step, store, left, right, set } from "s
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
 
+  const rule = useAppSelector((state) => state.table.transitions[state.tape.stateId]?.[state.tape.head.symbolId]);
+
   const symbols = useAppSelector((state) => state.table.symbols);
 
   const dispatch = useAppDispatch();
 
   const [running, setRunning] = useState(false);
-
-  const cells = [...tape.left, tape.head, ...tape.right];
-  const headIndex = tape.left.length;
 
   const next = useCallback(() => {
     const { tape, table } = store.getState();
@@ -30,6 +29,8 @@ export function Tape() {
       const [newState, newSymbol, direction] = rule;
 
       dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
+    } else {
+      setRunning(false);
     }
   }, [dispatch]);
 
@@ -63,22 +64,37 @@ export function Tape() {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [dispatch, symbols]);
 
+  const handleRun = () => {
+    setRunning(true);
+  };
+
+  const handlePause = () => {
+    setRunning(false);
+  };
+
+  const handleStep = () => {
+    next();
+  };
+
+  const cells = [...tape.left, tape.head, ...tape.right];
+  const headIndex = tape.left.length;
+
   const cellWidth = 48; // w-10 = 2.5rem = 40px, plus gap ≈ 8px
   const offset = (cells.length / 2 - headIndex - 0.5) * cellWidth;
 
   return (
     <div className="flex w-full flex-col items-center gap-8 py-8">
       <ButtonGroup>
-        <Button variant="outline" onClick={() => setRunning(true)} className="cursor-pointer">
+        <Button variant="outline" onClick={handleRun} disabled={!rule || running} className="cursor-pointer">
           <Play /> Run
         </Button>
-        <Button variant="outline" onClick={() => setRunning(false)} className="cursor-pointer">
+        <Button variant="outline" onClick={handlePause} disabled={!running} className="cursor-pointer">
           <Pause /> Pause
         </Button>
-        <Button variant="outline" onClick={next} className="cursor-pointer">
+        <Button variant="outline" onClick={handleStep} disabled={!rule || running} className="cursor-pointer">
           <FastForward /> Step
         </Button>
-        <Button variant="outline" className="cursor-pointer">
+        <Button variant="outline" disabled={running} className="cursor-pointer">
           <RotateCcw /> Reset
         </Button>
       </ButtonGroup>
@@ -101,10 +117,10 @@ export function Tape() {
         <Triangle strokeWidth={1} className="text-gray-300" />
       </div>
       <ButtonGroup>
-        <Button variant="outline" onClick={() => dispatch(left())} className="cursor-pointer">
+        <Button variant="outline" onClick={() => dispatch(left())} disabled={running} className="cursor-pointer">
           <ArrowLeft /> Left
         </Button>
-        <Button variant="outline" onClick={() => dispatch(right())} className="cursor-pointer">
+        <Button variant="outline" onClick={() => dispatch(right())} disabled={running} className="cursor-pointer">
           <ArrowRight /> Right
         </Button>
       </ButtonGroup>
