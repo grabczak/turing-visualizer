@@ -63,9 +63,12 @@ export const tapeSlice = createSlice({
           return _tape;
       }
     },
+    restore: (_, action: PayloadAction<{ tape: TTape }>) => {
+      return action.payload.tape;
+    },
   },
 });
 
-export const { left, right, step, set } = tapeSlice.actions;
+export const { left, right, step, set, restore } = tapeSlice.actions;
 
 export default tapeSlice.reducer;

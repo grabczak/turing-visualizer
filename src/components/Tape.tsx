@@ -5,7 +5,7 @@ import cx from "classnames";
 
 import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
-import { useAppSelector, useAppDispatch, step, store, left, right, set } from "src/store";
+import { useAppSelector, useAppDispatch, step, store, left, right, set, restore } from "src/store";
 
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
@@ -65,6 +65,8 @@ export function Tape() {
   }, [dispatch, symbols]);
 
   const handleRun = () => {
+    localStorage.setItem("tape", JSON.stringify(tape));
+
     setRunning(true);
   };
 
@@ -74,6 +76,14 @@ export function Tape() {
 
   const handleStep = () => {
     next();
+  };
+
+  const handleReset = () => {
+    const _tape = localStorage.getItem("tape");
+
+    if (_tape) {
+      dispatch(restore({ tape: JSON.parse(_tape) }));
+    }
   };
 
   const cells = [...tape.left, tape.head, ...tape.right];
@@ -94,7 +104,7 @@ export function Tape() {
         <Button variant="outline" onClick={handleStep} disabled={!rule || running} className="cursor-pointer">
           <FastForward /> Step
         </Button>
-        <Button variant="outline" disabled={running} className="cursor-pointer">
+        <Button variant="outline" onClick={handleReset} disabled={running} className="cursor-pointer">
           <RotateCcw /> Reset
         </Button>
       </ButtonGroup>
