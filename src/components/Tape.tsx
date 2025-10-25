@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, FastForward, Play, Pause, RotateCcw, Triangle } from "lucide-react";
 import cx from "classnames";
@@ -19,28 +19,29 @@ export function Tape() {
   const cells = [...tape.left, tape.head, ...tape.right];
   const headIndex = tape.left.length;
 
+  const next = useCallback(() => {
+    const { tape, table } = store.getState();
+
+    const { stateId, head } = tape;
+
+    const rule = table.transitions[stateId]?.[head.symbolId];
+
+    if (rule) {
+      const [newState, newSymbol, direction] = rule;
+
+      dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     if (!running) return;
-
-    const next = () => {
-      const { tape, table } = store.getState();
-
-      const { stateId, head } = tape;
-
-      const rule = table.transitions[stateId]?.[head.symbolId];
-
-      if (rule) {
-        const [newState, newSymbol, direction] = rule;
-        dispatch(step({ stateName: newState, symbolName: newSymbol, direction }));
-      }
-    };
 
     next();
 
     const interval = setInterval(next, 500);
 
     return () => clearInterval(interval);
-  }, [dispatch, running]);
+  }, [running, next]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -74,7 +75,7 @@ export function Tape() {
         <Button variant="outline" onClick={() => setRunning(false)} className="cursor-pointer">
           <Pause /> Pause
         </Button>
-        <Button variant="outline" className="cursor-pointer">
+        <Button variant="outline" onClick={next} className="cursor-pointer">
           <FastForward /> Step
         </Button>
         <Button variant="outline" className="cursor-pointer">
