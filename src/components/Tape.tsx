@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, FastForward, Play, Pause, RotateCcw, Triangle } from "lucide-react";
 import cx from "classnames";
@@ -99,10 +99,31 @@ export function Tape() {
     }
   };
 
+  const [cellWidth, setCellWidth] = useState<number>(48);
+
+  const cellRef = useRef<HTMLDivElement | null>(null);
+
+  const handleResize = () => {
+    if (cellRef.current) {
+      const rect = cellRef.current.getBoundingClientRect();
+
+      setCellWidth(rect.width);
+    }
+  };
+
+  useLayoutEffect(() => {
+    handleResize();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const cells = [...tape.left, tape.head, ...tape.right];
   const headIndex = tape.left.length;
 
-  const cellWidth = 48; // w-10 = 2.5rem = 40px, plus gap ≈ 8px
   const offset = (cells.length / 2 - headIndex - 0.5) * cellWidth;
 
   return (
@@ -144,16 +165,15 @@ export function Tape() {
       <div className="relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden border-t border-b p-4">
         <Triangle strokeWidth={1} className="rotate-180 text-gray-300" />
         <motion.div
-          className="flex gap-2 font-mono text-lg"
+          className="flex font-mono text-lg"
           animate={{ x: offset }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {cells.map((cell) => (
-            <div
-              key={cell.id}
-              className={cx("flex h-10 w-10 items-center justify-center rounded-md border border-gray-300")}
-            >
-              {symbols[cell.symbolId]}
+          {cells.map((cell, i) => (
+            <div key={cell.id} ref={i === headIndex ? cellRef : null} className={cx("h-12 w-12 p-1")}>
+              <div className={cx("flex h-full w-full items-center justify-center rounded-md border border-gray-300")}>
+                {symbols[cell.symbolId]}
+              </div>
             </div>
           ))}
         </motion.div>
