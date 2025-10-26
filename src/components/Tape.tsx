@@ -5,6 +5,7 @@ import cx from "classnames";
 
 import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
+import { Slider } from "./ui/slider";
 import { useAppSelector, useAppDispatch, step, store, left, right, set, restore, setStatus } from "src/store";
 
 export function Tape() {
@@ -35,6 +36,8 @@ export function Tape() {
     }
   }, [dispatch]);
 
+  const [speed, setSpeed] = useState(500);
+
   useEffect(() => {
     if (status !== "running") {
       return;
@@ -42,10 +45,10 @@ export function Tape() {
 
     next();
 
-    const interval = setInterval(next, 500);
+    const interval = setInterval(next, speed);
 
     return () => clearInterval(interval);
-  }, [status, next]);
+  }, [status, next, speed]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -128,40 +131,76 @@ export function Tape() {
 
   return (
     <div className="flex w-full flex-col items-center gap-8 py-8">
-      <ButtonGroup>
-        <Button
-          variant="outline"
-          onClick={handleRun}
-          disabled={["running", "done"].includes(status)}
-          className="cursor-pointer"
-        >
-          <Play /> Run
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handlePause}
-          disabled={["idle", "paused", "done"].includes(status)}
-          className="cursor-pointer"
-        >
-          <Pause /> Pause
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleStep}
-          disabled={["running", "done"].includes(status)}
-          className="cursor-pointer"
-        >
-          <FastForward /> Step
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleReset}
-          disabled={["idle", "running"].includes(status)}
-          className="cursor-pointer"
-        >
-          <RotateCcw /> Reset
-        </Button>
-      </ButtonGroup>
+      <div className="flex min-w-100 flex-col items-center gap-4">
+        <ButtonGroup className="flex w-full">
+          <Button
+            variant="outline"
+            onClick={handleRun}
+            disabled={["running", "done"].includes(status)}
+            className="flex-1 cursor-pointer"
+          >
+            <Play /> Run
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handlePause}
+            disabled={["idle", "paused", "done"].includes(status)}
+            className="flex-1 cursor-pointer"
+          >
+            <Pause /> Pause
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleStep}
+            disabled={["running", "done"].includes(status)}
+            className="flex-1 cursor-pointer"
+          >
+            <FastForward /> Step
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleReset}
+            disabled={["idle", "running"].includes(status)}
+            className="flex-1 cursor-pointer"
+          >
+            <RotateCcw /> Reset
+          </Button>
+        </ButtonGroup>
+        <div className="flex w-full flex-col gap-2">
+          <div className="text-sm">Speed</div>
+          <Slider
+            value={[1000 - speed]}
+            min={0}
+            max={1000}
+            step={100}
+            onValueChange={(value) => setSpeed(1000 - value[0])}
+            className="flex-4 cursor-pointer"
+          />
+          <div className="flex justify-between">
+            <div className="text-muted-foreground text-xs">Slow</div>
+            <div className="text-muted-foreground text-xs">Medium</div>
+            <div className="text-muted-foreground text-xs">Fast</div>
+          </div>
+        </div>
+        <ButtonGroup className="flex w-1/2">
+          <Button
+            variant="outline"
+            onClick={() => dispatch(left())}
+            disabled={status === "running"}
+            className="flex-1 cursor-pointer"
+          >
+            <ArrowLeft /> Left
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => dispatch(right())}
+            disabled={status === "running"}
+            className="flex-1 cursor-pointer"
+          >
+            <ArrowRight /> Right
+          </Button>
+        </ButtonGroup>
+      </div>
       <div className="relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden border-t border-b p-4">
         <Triangle strokeWidth={1} className="rotate-180 text-gray-300" />
         <motion.div
@@ -179,24 +218,6 @@ export function Tape() {
         </motion.div>
         <Triangle strokeWidth={1} className="text-gray-300" />
       </div>
-      <ButtonGroup>
-        <Button
-          variant="outline"
-          onClick={() => dispatch(left())}
-          disabled={status === "running"}
-          className="cursor-pointer"
-        >
-          <ArrowLeft /> Left
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => dispatch(right())}
-          disabled={status === "running"}
-          className="cursor-pointer"
-        >
-          <ArrowRight /> Right
-        </Button>
-      </ButtonGroup>
     </div>
   );
 }
