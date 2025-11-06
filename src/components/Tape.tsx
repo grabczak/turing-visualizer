@@ -6,16 +6,31 @@ import cx from "classnames";
 import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
 import { Slider } from "./ui/slider";
-import { useAppSelector, useAppDispatch, step, store, left, right, set, restore, setStatus } from "src/store";
+import {
+  useAppSelector,
+  useAppDispatch,
+  useAppStore,
+  step,
+  left,
+  right,
+  set,
+  restore,
+  setStatus,
+  setSpeed,
+} from "src/store";
 
 export function Tape() {
   const tape = useAppSelector((state) => state.tape);
 
   const symbols = useAppSelector((state) => state.table.symbols);
 
+  const speed = useAppSelector((state) => state.tape.speed);
+
   const dispatch = useAppDispatch();
 
   const status = tape.status;
+
+  const store = useAppStore();
 
   const next = useCallback(() => {
     const { tape, table } = store.getState();
@@ -34,9 +49,7 @@ export function Tape() {
     } else {
       dispatch(setStatus({ status: "done" }));
     }
-  }, [dispatch]);
-
-  const [speed, setSpeed] = useState(500);
+  }, [dispatch, store]);
 
   useEffect(() => {
     if (status !== "running") {
@@ -173,7 +186,7 @@ export function Tape() {
             min={0}
             max={1000}
             step={100}
-            onValueChange={(value) => setSpeed(1000 - value[0])}
+            onValueChange={(value) => dispatch(setSpeed({ speed: 1000 - value[0] }))}
             className="flex-4 cursor-pointer"
           />
           <div className="flex justify-between">

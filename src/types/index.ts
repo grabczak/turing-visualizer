@@ -20,6 +20,8 @@ export type TTransitions = Record<TStateId, Record<TSymbolId, TTransition | unde
 
 export type TStatus = "idle" | "running" | "paused" | "done";
 
+export type TSpeed = number;
+
 export type TTable = {
   states: TStates;
   symbols: TSymbols;
@@ -34,6 +36,7 @@ export type TCell = {
 export type TTape = {
   stateId: TStateId;
   status: TStatus;
+  speed: TSpeed;
   left: TCell[];
   head: TCell;
   right: TCell[];
