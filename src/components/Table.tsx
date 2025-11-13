@@ -42,22 +42,19 @@ export function Table() {
     <Grid stateCount={stateCount} symbolCount={symbolCount}>
       <Cell className="col-span-2" border={false} />
       {symbolIds.map((symbolId) => (
-        <Cell key={symbolId} className="col-span-3 min-w-60">
+        <Cell key={symbolId} className="min-w-60">
           <RemoveSymbolButton symbolId={symbolId} disabled={symbolCount <= 1} />
         </Cell>
       ))}
-      <Cell border={false} />
+      <Cell border={false} className="border-l" />
       <Cell border={false} />
       <Cell className="text-center leading-10">δ</Cell>
       {symbolIds.map((symbolId) => (
-        <Cell
-          key={symbolId}
-          className={cn("col-span-3", symbolId === currentSymbolId ? "bg-emerald-100" : "bg-transparent")}
-        >
+        <Cell key={symbolId} className={cn("", symbolId === currentSymbolId ? "bg-emerald-100" : "bg-transparent")}>
           <SymbolInput symbolId={symbolId} />
         </Cell>
       ))}
-      <Cell className="h-full" style={{ gridRow: `span ${stateCount + 1}` }}>
+      <Cell style={{ gridRow: `span ${stateCount + 1}` }} className="h-full border-r">
         <AddSymbolButton />
       </Cell>
       {stateIds.map((stateId) => (
@@ -70,24 +67,20 @@ export function Table() {
           </Cell>
           {symbolIds.map((symbolId) => (
             <Fragment key={symbolId}>
-              <Cell>
+              <Cell className="flex w-full">
                 <StateTransitionInput stateId={stateId} symbolId={symbolId} />
-              </Cell>
-              <Cell>
                 <SymbolTransitionInput stateId={stateId} symbolId={symbolId} />
-              </Cell>
-              <Cell>
                 <DirectionTransitionInput stateId={stateId} symbolId={symbolId} />
               </Cell>
             </Fragment>
           ))}
         </Fragment>
       ))}
-      <Cell border={false} />
-      <Cell style={{ gridColumn: `span ${3 * symbolCount + 1}` }}>
+      <Cell border={false} className="border-t" />
+      <Cell style={{ gridColumn: `span ${symbolCount + 1}` }} className="border-b">
         <AddStateButton />
       </Cell>
-      <Cell border={false} />
+      <Cell border={false} className="border-t border-l" />
     </Grid>
   );
 }
@@ -106,7 +99,7 @@ function Grid({
       <div
         className="grid overflow-scroll p-8"
         style={{
-          gridTemplateColumns: `repeat(${3 * symbolCount + 3}, max-content)`,
+          gridTemplateColumns: `repeat(${symbolCount + 3}, max-content)`,
           gridTemplateRows: `repeat(${stateCount}, 1fr)`,
         }}
       >
@@ -128,7 +121,7 @@ function Cell({
   border?: boolean;
 }) {
   return (
-    <div className={cn("h-10", className, border && "border")} style={style}>
+    <div className={cn("h-10", className, border && "border-t border-l last:border-r last:border-b")} style={style}>
       {children}
     </div>
   );
@@ -256,7 +249,7 @@ function StateTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbol
 
   return (
     <Select value={nextStateId} onValueChange={handleStateChange}>
-      <SelectTrigger className="hover:bg-accent/90 !h-full w-full cursor-pointer rounded-none border-none shadow-none transition-all">
+      <SelectTrigger className="hover:bg-accent/90 !h-full flex-1 cursor-pointer rounded-none border-t-0 border-b-0 border-l-0 shadow-none transition-all">
         <SelectValue placeholder="State" />
       </SelectTrigger>
       <SelectContent>
@@ -294,7 +287,7 @@ function SymbolTransitionInput({ stateId, symbolId }: { stateId: TStateId; symbo
 
   return (
     <Select value={nextSymbolId} onValueChange={handleSymbolChange}>
-      <SelectTrigger className="hover:bg-accent/90 !h-full w-full cursor-pointer rounded-none border-none shadow-none transition-all">
+      <SelectTrigger className="hover:bg-accent/90 !h-full flex-1 cursor-pointer rounded-none border-t-0 border-b-0 border-l-0 shadow-none transition-all">
         <SelectValue placeholder="Symbol" />
       </SelectTrigger>
       <SelectContent>
@@ -334,7 +327,7 @@ function DirectionTransitionInput({ stateId, symbolId }: { stateId: TStateId; sy
     <Button
       variant="outline"
       onClick={handleDirectionChange}
-      className="!h-full w-full cursor-pointer rounded-none border-none shadow-none"
+      className="!h-full w-10 cursor-pointer rounded-none border-none shadow-none"
     >
       {direction}
     </Button>
