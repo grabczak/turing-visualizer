@@ -12,11 +12,13 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@tanstack/react-router": "^1.170.32",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-plugin": "^1.168.35",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
