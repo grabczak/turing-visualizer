@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Slider } from "@/components/ui/slider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Machine() {
   return (
@@ -31,6 +32,7 @@ function Machine() {
           </Button>
         </Link>
         <Input value="Untitled Machine 1" />
+        <ThemeToggle />
       </div>
       <Card>
         <CardHeader className="border-b">

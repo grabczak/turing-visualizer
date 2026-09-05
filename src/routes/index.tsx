@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const defined = [
   { title: "Untitled machine 1", description: "2 states, 2 symbols" },
@@ -24,10 +25,15 @@ const examples = [
 function Home() {
   return (
     <div className="container p-8">
-      <h1 className="font-bold text-xl">Turing Machine Visualizer</h1>
-      <h2 className="text-muted-foreground">
-        Pick a machine to run, or start one from scratch
-      </h2>
+      <div className="flex justify-between">
+        <div>
+          <h1 className="font-bold text-xl">Turing Machine Visualizer</h1>
+          <h2 className="text-muted-foreground">
+            Pick a machine to run, or start one from scratch
+          </h2>
+        </div>
+        <ThemeToggle />
+      </div>
       <section className="py-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg">Your machines</h3>
