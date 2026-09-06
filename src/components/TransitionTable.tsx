@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "cn";
 
 const phases: Phase[] = [
   { id: "q0", name: "q0" },
@@ -84,47 +83,37 @@ const transitions: Record<ID, Record<ID, Transition>> = {
   qR: {},
 };
 
-const cellControl = "h-full! w-full border-0";
-const cellSurface = "dark:bg-input/30";
-const cellHover = "hover:bg-input/50 dark:hover:bg-input/50";
-
-const cellInput = cn(cellControl, "text-center");
-const cellTrigger = cn(cellControl, "min-w-0 p-2", cellHover);
-const cellButton = cn(
-  cellControl,
-  "w-10 p-2",
-  cellSurface,
-  cellHover,
-  "active:translate-y-0!",
-);
-const cellLabel = cn("flex h-full items-center justify-center", cellSurface);
-
-const stickyColumn = cn(
-  "sticky left-0 bg-card",
-  "before:absolute before:inset-0 before:-z-10 before:bg-muted/50 before:opacity-0 before:transition-opacity group-hover/row:before:opacity-100",
-  "border-e-0 after:absolute after:inset-y-0 after:end-0 after:w-px after:bg-border",
-);
-
 export function TransitionTable() {
   return (
     <Table className="w-full min-w-max border-t">
       <TableHeader>
-        <TableRow className="divide-x group/row">
-          <TableHead className={cn("p-0", stickyColumn)}>
-            <div className={cellLabel}>δ</div>
+        <TableRow className="divide-x hover:bg-transparent has-aria-expanded:bg-transparent">
+          <TableHead className="p-0 sticky left-0 bg-card border-e-0 after:absolute after:inset-y-0 after:inset-e-0 after:w-px after:bg-border">
+            <div className="flex h-full items-center justify-center dark:bg-input/30">
+              δ
+            </div>
           </TableHead>
           {tokens.map((token) => (
             <TableHead key={token.id} className="p-0">
-              <Input value={token.name} className={cellInput} />
+              <Input
+                value={token.name}
+                className="h-full w-full border-0 text-center"
+              />
             </TableHead>
           ))}
         </TableRow>
       </TableHeader>
       <TableBody>
         {phases.map((phase) => (
-          <TableRow key={phase.id} className="divide-x group/row">
-            <TableCell className={cn("p-0 h-10", stickyColumn)}>
-              <Input value={phase.name} className={cellInput} />
+          <TableRow
+            key={phase.id}
+            className="divide-x hover:bg-transparent has-aria-expanded:bg-transparent"
+          >
+            <TableCell className="p-0 sticky left-0 bg-card border-e-0 after:absolute after:inset-y-0 after:inset-e-0 after:w-px after:bg-border h-10">
+              <Input
+                value={phase.name}
+                className="h-full w-full border-0 text-center"
+              />
             </TableCell>
             {tokens.map((token) => {
               const t: Transition | undefined = transitions[phase.id][token.id];
@@ -152,39 +141,42 @@ export function TransitionCell({
 }: Partial<Transition>) {
   return (
     <div className="grid h-full grid-cols-[1fr_1fr_auto] [&>*:not(:last-child)]:border-e">
-      <Select value={nextPhaseId}>
-        <SelectTrigger className={cellTrigger}>
-          <SelectValue placeholder="State" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>State</SelectLabel>
-            {phases.map((phase) => (
-              <SelectItem key={phase.id} value={phase.id}>
-                {phase.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Select value={nextTokenId}>
-        <SelectTrigger className={cellTrigger}>
-          <SelectValue placeholder="Symbol" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Symbol</SelectLabel>
-            {tokens.map((token) => (
-              <SelectItem key={token.id} value={token.id}>
-                {token.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Button variant="ghost" className={cellButton}>
+      <CellSelect value={nextPhaseId} label="State" options={phases} />
+      <CellSelect value={nextTokenId} label="Symbol" options={tokens} />
+      <Button
+        variant="ghost"
+        className="h-full w-10 border-0 p-2 dark:bg-input/30 hover:bg-transparent dark:hover:bg-transparent active:translate-y-0!"
+      >
         {move ?? "S"}
       </Button>
     </div>
+  );
+}
+
+function CellSelect({
+  value,
+  label,
+  options,
+}: {
+  value?: ID;
+  label: string;
+  options: (Phase | Token)[];
+}) {
+  return (
+    <Select value={value}>
+      <SelectTrigger className="h-full! w-full min-w-0 border-0 p-2 hover:bg-transparent dark:hover:bg-transparent">
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>{label}</SelectLabel>
+          {options.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
