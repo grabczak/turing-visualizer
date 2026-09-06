@@ -83,7 +83,7 @@ function Machine() {
         <CardHeader>
           <CardTitle>Transition function</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <TransitionTable />
         </CardContent>
       </Card>
