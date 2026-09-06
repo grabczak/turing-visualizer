@@ -22,6 +22,8 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Slider } from "@/components/ui/slider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+import { TransitionTable } from "@/components/TransitionTable";
+
 function Machine() {
   return (
     <div className="container p-8 flex flex-col gap-4">
@@ -77,10 +79,13 @@ function Machine() {
           </div>
         </CardFooter>
       </Card>
-      <Card>
+      <Card className="pb-0">
         <CardHeader>
           <CardTitle>Transition function</CardTitle>
         </CardHeader>
+        <CardContent className="p-0">
+          <TransitionTable />
+        </CardContent>
       </Card>
     </div>
   );
