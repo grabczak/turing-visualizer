@@ -1,4 +1,7 @@
 import {
+  selectPhases,
+  selectTokens,
+  selectTransitionByPhaseIdAndTokenId,
   type ID,
   type Phase,
   type Token,
@@ -23,67 +26,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const phases: Phase[] = [
-  { id: "q0", name: "q0" },
-  { id: "q1", name: "q1" },
-  { id: "q2", name: "q2" },
-  { id: "q3", name: "q3" },
-  { id: "q4", name: "q4" },
-  { id: "q5", name: "q5" },
-  { id: "qA", name: "qA" },
-  { id: "qR", name: "qR" },
-];
-
-const tokens: Token[] = [
-  { id: "_", name: "_" },
-  { id: "0", name: "0" },
-  { id: "1", name: "1" },
-  { id: "X", name: "X" },
-];
-
-const transitions: Record<ID, Record<ID, Transition>> = {
-  q0: {
-    _: { nextPhaseId: "qA", nextTokenId: "_", move: "S" },
-    0: { nextPhaseId: "q1", nextTokenId: "X", move: "R" },
-    1: { nextPhaseId: "q2", nextTokenId: "X", move: "R" },
-    X: { nextPhaseId: "qA", nextTokenId: "X", move: "S" },
-  },
-  q1: {
-    _: { nextPhaseId: "q3", nextTokenId: "_", move: "L" },
-    0: { nextPhaseId: "q1", nextTokenId: "0", move: "R" },
-    1: { nextPhaseId: "q1", nextTokenId: "1", move: "R" },
-    X: { nextPhaseId: "q3", nextTokenId: "X", move: "L" },
-  },
-  q2: {
-    _: { nextPhaseId: "q4", nextTokenId: "_", move: "L" },
-    0: { nextPhaseId: "q2", nextTokenId: "0", move: "R" },
-    1: { nextPhaseId: "q2", nextTokenId: "1", move: "R" },
-    X: { nextPhaseId: "q4", nextTokenId: "X", move: "L" },
-  },
-  q3: {
-    _: { nextPhaseId: "qA", nextTokenId: "_", move: "S" },
-    0: { nextPhaseId: "q5", nextTokenId: "X", move: "L" },
-    1: { nextPhaseId: "qR", nextTokenId: "1", move: "S" },
-    X: { nextPhaseId: "qA", nextTokenId: "X", move: "S" },
-  },
-  q4: {
-    _: { nextPhaseId: "qA", nextTokenId: "_", move: "S" },
-    0: { nextPhaseId: "qR", nextTokenId: "0", move: "S" },
-    1: { nextPhaseId: "q5", nextTokenId: "X", move: "L" },
-    X: { nextPhaseId: "qA", nextTokenId: "X", move: "S" },
-  },
-  q5: {
-    _: { nextPhaseId: "q0", nextTokenId: "_", move: "R" },
-    0: { nextPhaseId: "q5", nextTokenId: "0", move: "L" },
-    1: { nextPhaseId: "q5", nextTokenId: "1", move: "L" },
-    X: { nextPhaseId: "q0", nextTokenId: "X", move: "R" },
-  },
-  qA: {},
-  qR: {},
-};
+import { useAppSelector } from "@/store/hooks";
 
 export function TransitionTable() {
+  const phases = useAppSelector(selectPhases);
+  const tokens = useAppSelector(selectTokens);
+
   return (
     <Table className="w-full min-w-max border-t">
       <TableHeader>
@@ -115,18 +63,11 @@ export function TransitionTable() {
                 className="h-full w-full border-0 text-center"
               />
             </TableCell>
-            {tokens.map((token) => {
-              const t: Transition | undefined = transitions[phase.id][token.id];
-              return (
-                <TableCell key={token.id} className="p-0 h-10">
-                  <TransitionCell
-                    nextPhaseId={t?.nextPhaseId}
-                    nextTokenId={t?.nextTokenId}
-                    move={t?.move}
-                  />
-                </TableCell>
-              );
-            })}
+            {tokens.map((token) => (
+              <TableCell key={token.id} className="p-0 h-10">
+                <TransitionCell phaseId={phase.id} tokenId={token.id} />
+              </TableCell>
+            ))}
           </TableRow>
         ))}
       </TableBody>
@@ -135,19 +76,25 @@ export function TransitionTable() {
 }
 
 export function TransitionCell({
-  nextPhaseId,
-  nextTokenId,
-  move,
-}: Partial<Transition>) {
+  phaseId,
+  tokenId,
+}: {
+  phaseId: ID;
+  tokenId: ID;
+}) {
+  const t: Transition | undefined = useAppSelector((state) =>
+    selectTransitionByPhaseIdAndTokenId(state, phaseId, tokenId),
+  );
+
   return (
     <div className="grid h-full grid-cols-[1fr_1fr_auto] [&>*:not(:last-child)]:border-e">
-      <CellSelect value={nextPhaseId} label="State" options={phases} />
-      <CellSelect value={nextTokenId} label="Symbol" options={tokens} />
+      <CellSelect value={t?.nextPhaseId} label="State" options={[]} />
+      <CellSelect value={t?.nextTokenId} label="Symbol" options={[]} />
       <Button
         variant="ghost"
         className="h-full w-10 border-0 p-2 dark:bg-input/30 hover:bg-transparent dark:hover:bg-transparent active:translate-y-0!"
       >
-        {move ?? "S"}
+        {t?.move ?? "S"}
       </Button>
     </div>
   );

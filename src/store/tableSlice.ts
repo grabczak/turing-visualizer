@@ -30,10 +30,67 @@ export type TableState = {
 const phasesAdapter = createEntityAdapter<Phase>();
 const tokensAdapter = createEntityAdapter<Token>();
 
+const initialPhases: Phase[] = [
+  { id: "q0", name: "q0" },
+  { id: "q1", name: "q1" },
+  { id: "q2", name: "q2" },
+  { id: "q3", name: "q3" },
+  { id: "q4", name: "q4" },
+  { id: "q5", name: "q5" },
+  { id: "qa", name: "qa" },
+  { id: "qr", name: "qr" },
+];
+
+const initialTokens: Token[] = [
+  { id: "t0", name: "0" },
+  { id: "t1", name: "1" },
+  { id: "tx", name: "X" },
+  { id: "tb", name: "\u2423" },
+];
+
+const initialTransitions: Record<ID, Record<ID, Transition>> = {
+  q0: {
+    t0: { nextPhaseId: "q1", nextTokenId: "tx", move: "R" },
+    t1: { nextPhaseId: "q2", nextTokenId: "tx", move: "R" },
+    tx: { nextPhaseId: "qa", nextTokenId: "tx", move: "S" },
+    tb: { nextPhaseId: "qa", nextTokenId: "tb", move: "S" },
+  },
+  q1: {
+    t0: { nextPhaseId: "q1", nextTokenId: "t0", move: "R" },
+    t1: { nextPhaseId: "q1", nextTokenId: "t1", move: "R" },
+    tx: { nextPhaseId: "q3", nextTokenId: "tx", move: "L" },
+    tb: { nextPhaseId: "q3", nextTokenId: "tb", move: "L" },
+  },
+  q2: {
+    t0: { nextPhaseId: "q2", nextTokenId: "t0", move: "R" },
+    t1: { nextPhaseId: "q2", nextTokenId: "t1", move: "R" },
+    tx: { nextPhaseId: "q4", nextTokenId: "tx", move: "L" },
+    tb: { nextPhaseId: "q4", nextTokenId: "tb", move: "L" },
+  },
+  q3: {
+    t0: { nextPhaseId: "q5", nextTokenId: "tx", move: "L" },
+    t1: { nextPhaseId: "qr", nextTokenId: "t1", move: "S" },
+    tx: { nextPhaseId: "qa", nextTokenId: "tx", move: "S" },
+    tb: { nextPhaseId: "qa", nextTokenId: "tb", move: "S" },
+  },
+  q4: {
+    t0: { nextPhaseId: "qr", nextTokenId: "t0", move: "S" },
+    t1: { nextPhaseId: "q5", nextTokenId: "tx", move: "L" },
+    tx: { nextPhaseId: "qa", nextTokenId: "tx", move: "S" },
+    tb: { nextPhaseId: "qa", nextTokenId: "tb", move: "S" },
+  },
+  q5: {
+    t0: { nextPhaseId: "q5", nextTokenId: "t0", move: "L" },
+    t1: { nextPhaseId: "q5", nextTokenId: "t1", move: "L" },
+    tx: { nextPhaseId: "q0", nextTokenId: "tx", move: "R" },
+    tb: { nextPhaseId: "q0", nextTokenId: "tb", move: "R" },
+  },
+};
+
 const initialState: TableState = {
-  phases: phasesAdapter.getInitialState(),
-  tokens: tokensAdapter.getInitialState(),
-  transitions: {},
+  phases: phasesAdapter.setAll(phasesAdapter.getInitialState(), initialPhases),
+  tokens: tokensAdapter.setAll(tokensAdapter.getInitialState(), initialTokens),
+  transitions: initialTransitions,
 };
 
 const phaseSelectors = phasesAdapter.getSelectors(
@@ -132,6 +189,8 @@ const tableSlice = createSlice({
     selectTokens: tokenSelectors.selectAll,
     selectTokenById: tokenSelectors.selectById,
     selectTransitions: (state) => state.transitions,
+    selectTransitionByPhaseIdAndTokenId: (state, phaseId: ID, tokenId: ID) =>
+      state.transitions[phaseId]?.[tokenId],
   },
 });
 
@@ -151,6 +210,7 @@ export const {
   selectTokens,
   selectTokenById,
   selectTransitions,
+  selectTransitionByPhaseIdAndTokenId,
 } = tableSlice.selectors;
 
 export default tableSlice.reducer;
