@@ -29,7 +29,7 @@ function Machine() {
     <div className="container p-8 flex flex-col gap-4">
       <div className="flex items-center gap-4">
         <Link to="/">
-          <Button size="lg" variant="outline">
+          <Button variant="outline">
             <ArrowLeft /> Machines
           </Button>
         </Link>
