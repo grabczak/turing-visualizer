@@ -191,6 +191,21 @@ const tableSlice = createSlice({
     selectTransitions: (state) => state.transitions,
     selectTransitionByPhaseIdAndTokenId: (state, phaseId: ID, tokenId: ID) =>
       state.transitions[phaseId]?.[tokenId],
+    selectNextPhaseByPhaseIdAndTokenId: (state, phaseId: ID, tokenId: ID) => {
+      const nextPhaseId = state.transitions[phaseId]?.[tokenId]?.nextPhaseId;
+      return nextPhaseId
+        ? phaseSelectors.selectById(state, nextPhaseId)
+        : undefined;
+    },
+    selectNextTokenByPhaseIdAndTokenId: (state, phaseId: ID, tokenId: ID) => {
+      const nextTokenId = state.transitions[phaseId]?.[tokenId]?.nextTokenId;
+      return nextTokenId
+        ? tokenSelectors.selectById(state, nextTokenId)
+        : undefined;
+    },
+    selectMoveByPhaseIdAndTokenId: (state, phaseId: ID, tokenId: ID) => {
+      return state.transitions[phaseId]?.[tokenId]?.move;
+    },
   },
 });
 
@@ -211,6 +226,9 @@ export const {
   selectTokenById,
   selectTransitions,
   selectTransitionByPhaseIdAndTokenId,
+  selectNextPhaseByPhaseIdAndTokenId,
+  selectNextTokenByPhaseIdAndTokenId,
+  selectMoveByPhaseIdAndTokenId,
 } = tableSlice.selectors;
 
 export default tableSlice.reducer;

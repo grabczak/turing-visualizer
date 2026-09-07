@@ -1,12 +1,5 @@
-import {
-  selectPhases,
-  selectTokens,
-  selectTransitionByPhaseIdAndTokenId,
-  type ID,
-  type Phase,
-  type Token,
-  type Transition,
-} from "@/store/tableSlice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -16,9 +9,22 @@ import {
   SelectItem,
   SelectLabel,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/store/hooks";
+
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  type ID,
+  type Phase,
+  type Token,
+  type Move,
+  renamePhase,
+  renameToken,
+  setTransition,
+  selectPhases,
+  selectTokens,
+  selectNextPhaseByPhaseIdAndTokenId,
+  selectNextTokenByPhaseIdAndTokenId,
+  selectMoveByPhaseIdAndTokenId,
+} from "@/store/tableSlice";
 
 export function TransitionTable() {
   const phases = useAppSelector(selectPhases);
@@ -35,7 +41,7 @@ export function TransitionTable() {
           </th>
           {tokens.map((token) => (
             <th key={token.id} className="h-full">
-              <Input value={token.name} className="h-full text-center" />
+              <TokenInput token={token} />
             </th>
           ))}
         </tr>
@@ -44,11 +50,15 @@ export function TransitionTable() {
         {phases.map((phase) => (
           <tr key={phase.id} className="h-10">
             <td className="h-full sticky left-0 bg-card">
-              <Input value={phase.name} className="h-full text-center" />
+              <PhaseInput phase={phase} />
             </td>
             {tokens.map((token) => (
               <td key={token.id} className="h-full">
-                <TransitionCell phaseId={phase.id} tokenId={token.id} />
+                <div className="grid h-full grid-cols-[1fr_1fr_auto]">
+                  <PhaseSelect phaseId={phase.id} tokenId={token.id} />
+                  <TokenSelect phaseId={phase.id} tokenId={token.id} />
+                  <MoveButton phaseId={phase.id} tokenId={token.id} />
+                </div>
               </td>
             ))}
           </tr>
@@ -58,52 +68,142 @@ export function TransitionTable() {
   );
 }
 
-export function TransitionCell({
-  phaseId,
-  tokenId,
-}: {
-  phaseId: ID;
-  tokenId: ID;
-}) {
-  const t: Transition | undefined = useAppSelector((state) =>
-    selectTransitionByPhaseIdAndTokenId(state, phaseId, tokenId),
-  );
+function TokenInput({ token }: { token: Token }) {
+  const dispatch = useAppDispatch();
+
+  const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
+    dispatch(renameToken({ id: token.id, name: e.target.value }));
+  };
 
   return (
-    <div className="grid h-full grid-cols-[1fr_1fr_auto]">
-      <CellSelect value={t?.nextPhaseId} label="State" options={[]} />
-      <CellSelect value={t?.nextTokenId} label="Symbol" options={[]} />
-      <Button variant="outline" className="h-full w-10">
-        {t?.move ?? "S"}
-      </Button>
-    </div>
+    <Input
+      key={token.name}
+      defaultValue={token.name}
+      onBlur={handleBlur}
+      className="h-full text-center"
+    />
   );
 }
 
-function CellSelect({
-  value,
-  label,
-  options,
-}: {
-  value?: ID;
-  label: string;
-  options: (Phase | Token)[];
-}) {
+function PhaseInput({ phase }: { phase: Phase }) {
+  const dispatch = useAppDispatch();
+
+  const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
+    dispatch(renamePhase({ id: phase.id, name: e.target.value }));
+  };
+
   return (
-    <Select value={value}>
+    <Input
+      key={phase.name}
+      defaultValue={phase.name}
+      onBlur={handleBlur}
+      className="h-full text-center"
+    />
+  );
+}
+
+function PhaseSelect({ phaseId, tokenId }: { phaseId: ID; tokenId: ID }) {
+  const dispatch = useAppDispatch();
+
+  const nextPhase = useAppSelector((state) =>
+    selectNextPhaseByPhaseIdAndTokenId(state, phaseId, tokenId),
+  );
+
+  const handleChange = (nextPhaseId: ID | null) => {
+    if (!nextPhaseId) {
+      return;
+    }
+
+    dispatch(setTransition({ phaseId, tokenId, changes: { nextPhaseId } }));
+  };
+
+  return (
+    <Select value={nextPhase?.id ?? null} onValueChange={handleChange}>
       <SelectTrigger className="h-full! w-full">
-        <SelectValue placeholder={label} />
+        <SelectValue>{nextPhase?.name ?? "State"}</SelectValue>
       </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>{label}</SelectLabel>
-          {options.map((option) => (
-            <SelectItem key={option.id} value={option.id}>
-              {option.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
+      <SelectMenu label="State" selector={selectPhases} />
     </Select>
+  );
+}
+
+function TokenSelect({ phaseId, tokenId }: { phaseId: ID; tokenId: ID }) {
+  const dispatch = useAppDispatch();
+
+  const nextToken = useAppSelector((state) =>
+    selectNextTokenByPhaseIdAndTokenId(state, phaseId, tokenId),
+  );
+
+  const handleChange = (nextTokenId: ID | null) => {
+    if (!nextTokenId) {
+      return;
+    }
+
+    dispatch(setTransition({ phaseId, tokenId, changes: { nextTokenId } }));
+  };
+
+  return (
+    <Select value={nextToken?.id ?? null} onValueChange={handleChange}>
+      <SelectTrigger className="h-full! w-full">
+        <SelectValue>{nextToken?.name ?? "Symbol"}</SelectValue>
+      </SelectTrigger>
+      <SelectMenu label="Symbol" selector={selectTokens} />
+    </Select>
+  );
+}
+
+function SelectMenu({
+  label,
+  selector,
+}: {
+  label: string;
+  selector: typeof selectPhases | typeof selectTokens;
+}) {
+  const items = useAppSelector(selector);
+
+  return (
+    <SelectContent>
+      <SelectGroup>
+        <SelectLabel>{label}</SelectLabel>
+        {items.map((option) => (
+          <SelectItem key={option.id} value={option.id}>
+            {option.name}
+          </SelectItem>
+        ))}
+      </SelectGroup>
+    </SelectContent>
+  );
+}
+
+function MoveButton({ phaseId, tokenId }: { phaseId: ID; tokenId: ID }) {
+  const dispatch = useAppDispatch();
+
+  const move = useAppSelector((state) =>
+    selectMoveByPhaseIdAndTokenId(state, phaseId, tokenId),
+  );
+
+  const nextMove = (m?: Move) => {
+    switch (m) {
+      case "L":
+        return "S";
+      case "S":
+        return "R";
+      case "R":
+        return "L";
+      default:
+        return "S";
+    }
+  };
+
+  const handleClick = () => {
+    dispatch(
+      setTransition({ phaseId, tokenId, changes: { move: nextMove(move) } }),
+    );
+  };
+
+  return (
+    <Button onClick={handleClick} variant="outline" className="h-full w-10">
+      {move ?? "S"}
+    </Button>
   );
 }
